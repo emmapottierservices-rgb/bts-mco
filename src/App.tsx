@@ -69,14 +69,14 @@ function LearningApp({ user, onLogout, demo = false }: { user: User; onLogout: (
 
   useEffect(() => {
     if (demo) {
-      try { setProgress(JSON.parse(localStorage.getItem('cap-mco-demo-progress') || '{}')) } catch { setProgress({}) }
+      try { setProgress(JSON.parse(localStorage.getItem('cap-mco-demo-progress-v2') || '{}')) } catch { setProgress({}) }
     } else apiRequest<{ progress: Progress }>('/api/progress').then((result) => setProgress(result.progress)).catch(() => undefined)
   }, [demo])
 
   const updateProgress = (chapterId: number, data: { course?: boolean; score?: number }) => {
     setProgress((old) => {
       const next = { ...old, [chapterId]: { ...old[chapterId], ...data } }
-      if (demo) localStorage.setItem('cap-mco-demo-progress', JSON.stringify(next))
+      if (demo) localStorage.setItem('cap-mco-demo-progress-v2', JSON.stringify(next))
       return next
     })
     if (!demo) apiRequest(`/api/progress/${chapterId}`, { method: 'PUT', body: JSON.stringify(data) }).catch(() => undefined)
@@ -224,14 +224,14 @@ function ProgressView({ progress, percent, onOpen }: { progress: Progress; perce
 }
 
 function SlideVisual({ slide }: { slide: VideoSlide }) {
-  if (slide.visual === 'intro') return <div className="visual-intro"><span className="orbit orbit-one">€</span><span className="orbit orbit-two">↻</span><strong>BFR</strong></div>
-  if (slide.visual === 'flows') return <div className="visual-flows"><div><span>▦</span><b>Biens</b><small>Flux physiques</small></div><i>⇄</i><div><span>€</span><b>Argent</b><small>Flux financiers</small></div></div>
-  if (slide.visual === 'commercial-cycle') return <div className="visual-timeline"><div><span>J0</span><b>Achat</b></div><i /><div><span>J15</span><b>Vente comptant</b></div><i /><div><span>J30</span><b>Paiement fournisseur</b></div></div>
-  if (slide.visual === 'industrial-cycle') return <div className="visual-timeline industrial"><div><span>J0</span><b>Matières</b></div><i /><div><span>J30</span><b>Transformation</b></div><i /><div><span>J45</span><b>Vente</b></div><i /><div><span>J60</span><b>Encaissement</b></div></div>
-  if (slide.visual === 'bfr') return <div className="visual-balance"><div className="need"><b>BESOIN</b><span>Payer avant d’encaisser</span></div><div className="balance-bar">↔</div><div className="resource"><b>RESSOURCE</b><span>Encaisser avant de payer</span></div></div>
-  if (slide.visual === 'days') return <div className="visual-calculation"><span>Clients</span><b>+</b><span>Stocks</span><b>−</b><span>Fournisseurs</span><b>=</b><strong>BFR</strong></div>
-  if (slide.visual === 'value') return <div className="visual-value"><div><small>Créances + stocks</small><b>66 666,66 €</b></div><span>− 40 000 €</span><strong>26 666,67 €</strong><small>de besoin à financer</small></div>
-  return <div className="visual-actions"><span>1<b>Clients</b><small>Encaisser plus vite</small></span><span>2<b>Stocks</b><small>Réduire la durée</small></span><span>3<b>Fournisseurs</b><small>Négocier les délais</small></span></div>
+  if (slide.visual === 'intro') return <div className="visual-intro"><span className="orbit orbit-one">%</span><span className="orbit orbit-two">TVA</span><strong>DOCS</strong></div>
+  if (slide.visual === 'flows') return <div className="visual-flows"><div><span>150</span><b>La base</b><small>Le prix initial</small></div><i>×</i><div><span>20%</span><b>Le taux</b><small>0,20</small></div></div>
+  if (slide.visual === 'commercial-cycle') return <div className="visual-timeline"><div><span>1</span><b>Devis</b></div><i /><div><span>2</span><b>Commande</b></div><i /><div><span>3</span><b>Livraison</b></div></div>
+  if (slide.visual === 'industrial-cycle') return <div className="visual-timeline industrial"><div><span>1</span><b>État</b></div><i /><div><span>2</span><b>Références</b></div><i /><div><span>3</span><b>Quantités</b></div><i /><div><span>4</span><b>Réserves</b></div></div>
+  if (slide.visual === 'bfr') return <div className="visual-balance"><div className="need"><b>FACTURE</b><span>Demande le paiement</span></div><div className="balance-bar">→</div><div className="resource"><b>RÈGLEMENT</b><span>Le client paie</span></div></div>
+  if (slide.visual === 'days') return <div className="visual-calculation"><span>150 €</span><b>×</b><span>0,80</span><b>=</b><strong>120 €</strong></div>
+  if (slide.visual === 'value') return <div className="visual-value"><div><small>Prix hors taxe</small><b>50 € HT</b></div><span>+ 10 € de TVA</span><strong>60 € TTC</strong><small>à payer par le client</small></div>
+  return <div className="visual-actions"><span>1<b>Documents</b><small>Suivre la bonne étape</small></span><span>2<b>Contrôles</b><small>Comparer et vérifier</small></span><span>3<b>Calculs</b><small>Identifier la base</small></span></div>
 }
 
 function VideoLesson({ slides, onComplete }: { slides: VideoSlide[]; onComplete: () => void }) {
@@ -252,11 +252,11 @@ function VideoLesson({ slides, onComplete }: { slides: VideoSlide[]; onComplete:
         || availableVoices.find((item) => item.lang.toLowerCase().startsWith('fr'))
         || null
       speech.lang = 'fr-FR'
-      speech.rate = .94
-      speech.pitch = 1.06
+      speech.rate = 1.12
+      speech.pitch = 1.04
       window.speechSynthesis.speak(speech)
     }
-    const seconds = Math.max(12, Math.ceil(slide.narration.split(' ').length / 2.4))
+    const seconds = Math.max(9, Math.ceil(slide.narration.split(' ').length / 2.7))
     const timer = window.setTimeout(() => {
       if (last) { setPlaying(false); onComplete() }
       else setIndex((current) => current + 1)
@@ -282,7 +282,7 @@ function VideoLesson({ slides, onComplete }: { slides: VideoSlide[]; onComplete:
     <div className="video-progress"><i style={{ width: `${((index + 1) / slides.length) * 100}%` }} /></div>
     <div className="video-controls"><button onClick={() => move(index - 1)} disabled={index === 0} aria-label="Diapositive précédente">‹</button><button className="play" onClick={() => setPlaying(!playing)} aria-label={playing ? 'Mettre en pause' : 'Lire la vidéo'}>{playing ? 'Ⅱ' : '▶'}</button><button onClick={() => move(index + 1)} disabled={last} aria-label="Diapositive suivante">›</button><button className={voice ? 'voice active' : 'voice'} onClick={() => setVoice(!voice)} aria-label={voice ? 'Couper la voix temporaire' : 'Activer la voix temporaire'}>{voice ? '🔊 Voix féminine temporaire' : '🔇 Voix coupée'}</button></div>
     <div className="captions"><span>Sous-titres</span><p>{slide.narration}</p></div>
-    <div className="video-note"><span>✦</span><p><b>Première version de démonstration.</b> Une voix artificielle française lit les sous-titres. Elle pourra être remplacée plus tard par votre véritable voix.</p></div>
+    <div className="video-note"><span>✦</span><p><b>Voix provisoire.</b> Cette explication utilise pour le moment une voix française générée par le navigateur. Elle pourra être remplacée plus tard par votre véritable voix.</p></div>
   </section>
 }
 
